@@ -27,10 +27,13 @@ use pocketmine\utils\Config;
 
 class YamlProvider implements Provider{
 
-	private $config;
-
+	/** @var EconomyAPI */
 	private $plugin;
 
+	/** @var Config */
+	private $config;
+
+	/** @var array */
 	private $money = [];
 
 	private $rankCache_NameToRank = [];
@@ -40,38 +43,32 @@ class YamlProvider implements Provider{
 		$this->plugin = $plugin;
 
 		$this->open();
-		$this->recalculateRank();
+		$this->recalculateAllRank();
 	}
 
-	protected function recalculateRank($player = null){
-		if($player === null){
-			arsort($this->money["money"]);
-			$rank = 1;
-			foreach($this->money["money"] as $name => $money){
-				$this->rankCache_RankToName[$rank] = $name;
-				$this->rankCache_NameToRank[$name] = $rank;
-				++$rank;
-			}
-			return;
-		}
+	public function open(){
+		$this->config = new Config($this->plugin->getDataFolder() . "Money.yml", Config::YAML, [
+			"version" => 2,
+			"money" => []
+		]);
+		$this->money = $this->config->getAll()["money"];
+	}
 
-		if($player instanceof CommandSender){
-			$player = $player->getName();
-		}
+	protected function recalculateRank(string $player){
 		$player = strtolower($player);
 
-		$end = count($this->money["money"]);
+		$end = count($this->money);
 		if(!isset($this->rankCache_NameToRank[$player])){
 			$this->rankCache_NameToRank[$player] = $end;
 			$this->rankCache_RankToName[$end] = $player;
 		}
 
 		$currentRank = $this->rankCache_NameToRank[$player];
-		$currentMoney = $this->money["money"][$player];
+		$currentMoney = $this->money[$player];
 
 		$changed = false;
 
-		while($currentRank > 1 && $currentMoney > $this->money["money"][$this->rankCache_RankToName[$currentRank - 1]]){
+		while($currentRank > 1 && $currentMoney > $this->money[$this->rankCache_RankToName[$currentRank - 1]]){
 			$abovePlayer = $this->rankCache_RankToName[$currentRank - 1];
 			$this->rankCache_RankToName[$currentRank] = $abovePlayer;
 			$this->rankCache_NameToRank[$abovePlayer] = $currentRank;
@@ -87,7 +84,7 @@ class YamlProvider implements Provider{
 			return;
 		}
 
-		while($currentRank < $end && $currentMoney < $this->money["money"][$this->rankCache_RankToName[$currentRank + 1]]){ // if target player's money is less than below player's money
+		while($currentRank < $end && $currentMoney < $this->money[$this->rankCache_RankToName[$currentRank + 1]]){ // if target player's money is less than below player's money
 			$belowPlayer = $this->rankCache_RankToName[$currentRank + 1];
 			$this->rankCache_RankToName[$currentRank] = $belowPlayer;
 			$this->rankCache_NameToRank[$belowPlayer] = $currentRank;
@@ -100,124 +97,95 @@ class YamlProvider implements Provider{
 		}
 	}
 
-	public function open(){
-		$this->config = new Config($this->plugin->getDataFolder() . "Money.yml", Config::YAML, ["version" => 2, "money" => []]);
-		$this->money = $this->config->getAll();
+	protected function recalculateAllRank(){
+		arsort($this->money);
+		$rank = 1;
+		foreach($this->money as $name => $money){
+			$this->rankCache_RankToName[$rank] = $name;
+			$this->rankCache_NameToRank[$name] = $rank;
+			++$rank;
+		}
+		return;
 	}
 
-	public function accountExists($player){
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
-		$player = strtolower($player);
-
-		return isset($this->money["money"][$player]);
+	public function accountExists(string $player) : bool{
+		return isset($this->money[$player]);
 	}
 
-	public function createAccount($player, $defaultMoney = 1000){
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
+	public function createAccount(string $player, $defaultMoney = 1000) : bool{
 		$player = strtolower($player);
-
-		if(!isset($this->money["money"][$player])){
-			$this->money["money"][$player] = $defaultMoney;
+		if(!isset($this->money[$player])){
+			$this->money[$player] = $defaultMoney;
 			$this->recalculateRank($player); // calculate rank
 			return true;
 		}
 		return false;
 	}
 
-	public function removeAccount($player){
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
+	public function removeAccount(string $player) : bool{
 		$player = strtolower($player);
-
-		if(isset($this->money["money"][$player])){
-			unset($this->money["money"][$player]);
-			$this->recalculateRank(); //TODO: Optimize
+		if(isset($this->money[$player])){
+			unset($this->money[$player]);
+			$this->recalculateAllRank(); //TODO: Optimize
 			return true;
 		}
 		return false;
 	}
 
-	public function getMoney($player){
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
-		$player = strtolower($player);
-
-		if(isset($this->money["money"][$player])){
-			return $this->money["money"][$player];
-		}
-		return false;
+	public function getMoney(string $player){
+		return $this->money[strtolower($player)] ?? false;
 	}
 
-	public function setMoney($player, $amount){
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
+	public function setMoney(string $player, $amount) : bool{
 		$player = strtolower($player);
-
-		if(isset($this->money["money"][$player])){
-			$this->money["money"][$player] = $amount;
-			$this->money["money"][$player] = round($this->money["money"][$player], 2);
+		if(isset($this->money[$player])){
+			$this->money[$player] = $amount;
+			$this->money[$player] = round($this->money[$player], 2);
 			$this->recalculateRank($player); // calculate rank
 			return true;
 		}
 		return false;
 	}
 
-	public function addMoney($player, $amount){
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
+	public function addMoney(string $player, $amount) : bool{
 		$player = strtolower($player);
-
-		if(isset($this->money["money"][$player])){
-			$this->money["money"][$player] += $amount;
-			$this->money["money"][$player] = round($this->money["money"][$player], 2);
-			$this->recalculateRank($player); // calculate rank
+		if(isset($this->money[$player])){
+			$this->money[$player] += $amount;
+			$this->money[$player] = round($this->money[$player], 2);
+			$this->recalculateRank($player); // 해당 플레이어의 순위를 다시 계산합니다.
 			return true;
 		}
 		return false;
 	}
 
-	public function reduceMoney($player, $amount){
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
+	public function reduceMoney(string $player, $amount) : bool{
 		$player = strtolower($player);
-
-		if(isset($this->money["money"][$player])){
-			$this->money["money"][$player] -= $amount;
-			$this->money["money"][$player] = round($this->money["money"][$player], 2);
-			$this->recalculateRank($player); // calculate rank
+		if(isset($this->money[$player])){
+			$this->money[$player] -= $amount;
+			$this->money[$player] = round($this->money[$player], 2);
+			$this->recalculateRank($player); // 해당 플레이어의 순위를 다시 계산합니다.
 			return true;
 		}
 		return false;
 	}
 
-	public function getRank($player){
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
-		$player = strtolower($player);
-
-		return $this->rankCache_NameToRank[$player] ?? -1;
+	public function getRank(string $player){
+		return $this->rankCache_NameToRank[strtolower($player)] ?? false;
 	}
 
-	public function getPlayerByRank($rank){
-		return $this->rankCache_RankToName[$rank] ?? null;
+	public function getPlayerByRank(int $rank){
+		return $this->rankCache_RankToName[$rank] ?? false;
 	}
 
-	public function getAll(){
-		return $this->money["money"] ?? [];
+	public function getAll() : array{
+		return $this->money ?? [];
 	}
 
 	public function save(){
-		$this->config->setAll($this->money);
+		$this->config->setAll([
+			"version" => 2,
+			"money" => $this->money
+		]);
 		$this->config->save();
 	}
 
@@ -225,7 +193,7 @@ class YamlProvider implements Provider{
 		$this->save();
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Yaml";
 	}
 }

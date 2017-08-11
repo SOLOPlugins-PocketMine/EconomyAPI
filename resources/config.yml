@@ -1,24 +1,17 @@
 # monetary-unit: Set what monetary unit you want to use
-monetary-unit: "$"
-# add-op-at-rank: Set whether to show OPs at top money rank
-add-op-at-rank: false
+monetary-unit: 원
+
 # default-money: Set default money when player joined the server first
 default-money: 1000
+
 # max-money: Set max money that player can have
 max-money: 9999999999
+
 # Whether to allow player to pay when taret player is offline
 allow-pay-offline: true
 
 # auto-save-interval: Set interval of auto-save
 auto-save-interval: 10
 
-# provider: Set provider of database (Available: yaml, mysql)
+# provider: Set provider of database (Available: yaml)
 provider: yaml
-
-# provider-settings: Data which will be given to database provider
-provider-settings:
-  host: 127.0.0.1
-  port: 3306
-  user: onebone
-  password: hello_world
-  db: economyapi

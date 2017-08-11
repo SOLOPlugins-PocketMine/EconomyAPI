@@ -24,11 +24,10 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 
 use onebone\economyapi\EconomyAPI;
+use onebone\economyapi\EconomyAPICommand;
 use onebone\economyapi\task\SortTask;
 
-use solo\standardapi\message\Page;
-
-class TopMoneyCommand extends Command{
+class TopMoneyCommand extends EconomyAPICommand{
 
 	private $plugin;
 
@@ -39,12 +38,12 @@ class TopMoneyCommand extends Command{
 		$this->plugin = $plugin;
 	}
 
-	public function execute(CommandSender $sender, $label, array $params){
+	public function _execute(CommandSender $sender, string $label, array $params) : bool{
 		if(!$sender->hasPermission($this->getPermission())){
-			$sender->sendMessage(new Alert("이 명령을 사용할 권한이 없습니다."));
+			$sender->sendMessage(EconomyAPI::$prefix . "이 명령을 사용할 권한이 없습니다.");
 			return true;
 		}
-		
+
 		$page = (int)array_shift($params);
 
 		$max = count($this->plugin->getAllMoney());
@@ -54,34 +53,29 @@ class TopMoneyCommand extends Command{
 
 		$server = $this->plugin->getServer();
 
-		$except = [];
+		$ops = [];
+		$banned = [];
 		foreach($server->getNameBans()->getEntries() as $entry){
-			if($this->plugin->accountExists($entry->getName())){
-				$except[$entry->getName()] = true;
-			}
+			$banned[strtolower($entry->getName())] = true;
 		}
 
-		if(!$this->plugin->getConfig()->get("add-op-at-rank")){
-			foreach($server->getOps()->getAll() as $op){
-				if($this->plugin->accountExists($op)){
-					$except[$op] = true;
-				}
-			}
+		foreach($server->getOps()->getAll() as $op => $tmp){
+			$ops[strtolower($op)] = true;
 		}
 
-		$texts = [];
+		$sender->sendMessage("§l==========[ 돈 순위 (전체 " . $maxPage . "페이지 중 " . $page . "페이지) ]==========");
 		for($i = 1; $i <= 5; $i++){
 			$rank = (5 * ($page - 1)) + $i;
 			if($rank > $max){
 				break;
 			}
 			$player = $this->plugin->getPlayerByRank($rank);
-			if($player === null){
-				continue;
-			}
-			$texts[] = ((isset($except[$player])) ? "§7" : "") . "[" . $rank . "위] " . $player . " : " . $this->plugin->myMoney($player);
+			$line = "§l§b[" . $rank . "위] ";
+			$line .= isset($banned[$player]) ? "§c[차단됨] " : '';
+			$line .= isset($ops[$player]) ? "§a[관리자] " : '';
+			$line .= "§r§7" . $player . " : " . $this->plugin->koreanWonFormat($this->plugin->myMoney($player));
+			$sender->sendMessage($line);
 		}
-		$sender->sendMessage(new Page("돈 순위", $texts, $page, $maxPage));
 		return true;
 	}
 }

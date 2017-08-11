@@ -37,8 +37,11 @@ use onebone\economyapi\event\money\ReduceMoneyEvent;
 use onebone\economyapi\event\money\AddMoneyEvent;
 use onebone\economyapi\event\money\MoneyChangedEvent;
 use onebone\economyapi\event\account\CreateAccountEvent;
+use onebone\economyapi\task\SaveTask;
 
 class EconomyAPI extends PluginBase implements Listener{
+
+	public static $prefix = "§b§l[EconomyAPI] §r§7";
 
 	const API_VERSION = 3;
 	const PACKAGE_VERSION = "5.7";
@@ -53,8 +56,86 @@ class EconomyAPI extends PluginBase implements Listener{
 
 	private $provider;
 
+	public static function getInstance(){
+		return self::$instance;
+	}
+
+	public function onLoad(){
+		self::$instance = $this;
+	}
+
+	public function onEnable(){
+		$this->saveDefaultConfig();
+
+		// Provider set
+		switch(strtolower($this->getConfig()->get("provider"))){
+			case "yaml":
+				$this->provider = new YamlProvider($this);
+				break;
+
+			default:
+				$this->getLogger()->critical("Invalid database was given.");
+				return false;
+		}
+
+		foreach([
+			"GiveMoneyCommand",
+			"MyMoneyCommand",
+			"PayCommand",
+			"SeeMoneyCommand",
+			"SetMoneyCommand",
+			"TakeMoneyCommand",
+			"TopBalanceCommand",
+			"TopMoneyCommand"
+		] as $class){
+			$class = "\\onebone\\economyapi\\command\\" . $class;
+			$this->getServer()->getCommandMap()->register("economyapi", new $class($this));
+		}
+
+		$saveInterval = $this->getConfig()->get("auto-save-interval") * 1200;
+
+		if($saveInterval > 0){
+			$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new SaveTask($this), $saveInterval, $saveInterval);
+		}
+
+		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+	}
+
+	public function onDisable(){
+		$this->saveAll();
+
+		if($this->provider instanceof Provider){
+			$this->provider->close();
+		}
+	}
+
 	public function getMonetaryUnit() : string{
 		return $this->getConfig()->get("monetary-unit");
+	}
+
+	public function thousandSeparatedFormat($money) : string{
+		return number_format($money) . $this->getMonetaryUnit();
+	}
+
+	public function koreanWonFormat($money) : string{
+		$str = '';
+		$elements = [];
+		if($money > 1000000000000){
+			$elements[] = floor($money / 1000000000000) . "조";
+			$money %= 1000000000000;
+		}
+		if($money > 100000000){
+			$elements[] = floor($money / 100000000) . "억";
+			$money %= 100000000;
+		}
+		if($money > 10000){
+			$elements[] = floor($money / 10000) . "만";
+			$money %= 10000;
+		}
+		if(count($elements) == 0 || $money > 0){
+			$elements[] = $money;
+		}
+		return implode(" ", $elements) . $this->getMonetaryUnit();
 	}
 
 	public function getAllMoney() : array{
@@ -79,10 +160,20 @@ class EconomyAPI extends PluginBase implements Listener{
 	}
 
 	public function accountExists($player) : bool{
+		if($player instanceof Player){
+			$player = $player->getName();
+		}
+		$player = strtolower($player);
+
 		return $this->provider->accountExists($player);
 	}
 
 	public function myMoney($player){
+		if($player instanceof Player){
+			$player = $player->getName();
+		}
+		$player = strtolower($player);
+
 		return $this->provider->getMoney($player);
 	}
 
@@ -95,6 +186,7 @@ class EconomyAPI extends PluginBase implements Listener{
 			$player = $player->getName();
 		}
 		$player = strtolower($player);
+
 		if($this->provider->accountExists($player)){
 			$amount = round($amount, 2);
 			if($amount > $this->getConfig()->get("max-money")){
@@ -116,10 +208,12 @@ class EconomyAPI extends PluginBase implements Listener{
 		if($amount < 0){
 			return self::RET_INVALID;
 		}
+
 		if($player instanceof Player){
 			$player = $player->getName();
 		}
 		$player = strtolower($player);
+
 		if(($money = $this->provider->getMoney($player)) !== false){
 			$amount = round($amount, 2);
 			if($money + $amount > $this->getConfig()->get("max-money")){
@@ -141,10 +235,12 @@ class EconomyAPI extends PluginBase implements Listener{
 		if($amount < 0){
 			return self::RET_INVALID;
 		}
+
 		if($player instanceof Player){
 			$player = $player->getName();
 		}
 		$player = strtolower($player);
+
 		if(($money = $this->provider->getMoney($player)) !== false){
 			$amount = round($amount, 2);
 			if($money - $amount < 0){
@@ -167,65 +263,12 @@ class EconomyAPI extends PluginBase implements Listener{
 			$player = $player->getName();
 		}
 		$player = strtolower($player);
-		
+
 		return $this->provider->getRank($player);
 	}
 
-	public function getPlayerByRank($rank){
+	public function getPlayerByRank(int $rank){
 		return $this->provider->getPlayerByRank($rank);
-	}
-
-	public static function getInstance(){
-		return self::$instance;
-	}
-
-	public function onLoad(){
-		self::$instance = $this;
-	}
-
-	public function onEnable(){
-		$this->saveDefaultConfig();
-
-		if(!isset($this->playerLang["console"])){
-			$this->playerLang["console"] = $this->getConfig()->get("default-lang");
-		}
-		if(!isset($this->playerLang["rcon"])){
-			$this->playerLang["rcon"] = $this->getConfig()->get("default-lang");
-		}
-
-		// Provider set
-		switch(strtolower($this->getConfig()->get("provider"))){
-			case "yaml":
-				$this->provider = new YamlProvider($this);
-				break;
-
-			//case "mysql":
-			//	$this->provider = new MySQLProvider($this);
-			//	break;
-
-			default:
-				$this->getLogger()->critical("Invalid database was given.");
-				return false;
-		}
-
-		$classBase = "\\onebone\\economyapi\\command\\";
-		foreach(["MyMoneyCommand", "TopMoneyCommand", "SetMoneyCommand", "SeeMoneyCommand", "GiveMoneyCommand", "TakeMoneyCommand", "PayCommand"] as $class){
-			$class = $classBase . $class;
-			$this->getServer()->getCommandMap()->register("economyapi", new $class($this));
-		}
-
-		$saveTask = new class($this) extends PluginTask{
-			public function onRun($currentTick){
-				$this->owner->saveAll();
-			}
-		};
-		$autoSaveInterval = $this->getConfig()->get("auto-save-interval") * 1200;
-
-		if($this->getConfig()->get("auto-save-interval") > 0){
-			$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask($saveTask, $autoSaveInterval, $autoSaveInterval);
-		}
-
-		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
 
 	public function onJoin(PlayerJoinEvent $event){
@@ -233,14 +276,6 @@ class EconomyAPI extends PluginBase implements Listener{
 
 		if(!$this->provider->accountExists($player)){
 			$this->createAccount($player, false, true);
-		}
-	}
-
-	public function onDisable(){
-		$this->saveAll();
-
-		if($this->provider instanceof Provider){
-			$this->provider->close();
 		}
 	}
 

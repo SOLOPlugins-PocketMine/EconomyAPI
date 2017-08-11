@@ -28,28 +28,110 @@ interface Provider{
 
 	public function open();
 
-	public function accountExists($player);
+	/**
+	 * 계정이 존재하는지 여부를 반환합니다.
+	 *
+	 * @param string $player
+	 *
+	 * @return bool
+	 */
+	public function accountExists(string $player) : bool;
 
-	public function createAccount($player, $defaultMoney = 1000);
+	/**
+	 * 계정을 생성합니다.
+	 *
+	 * @param string $player
+	 * @param int|float $defaultMoney
+	 *
+	 * @return bool
+	 */
+	public function createAccount(string $player, $defaultMoney = 1000) : bool;
 
-	public function removeAccount($player);
+	/**
+	 * 계정을 삭제합니다.
+	 *
+	 * @param string $player
+	 *
+	 * @return bool
+	 */
+	public function removeAccount(string $player) : bool;
 
-	public function getMoney($player);
+	/**
+	 * 플레이어의 돈을 반환합니다.
+	 *
+	 * @param string $player
+	 *
+	 * @return int|float
+	 */
+	public function getMoney(string $player);
 
-	public function setMoney($player, $amount);
+	/**
+	 * 플레이어의 돈을 설정합니다.
+	 *
+	 * @param string $player
+	 * @param int|float $amount
+	 *
+	 * @return bool
+	 */
+	public function setMoney(string $player, $amount) : bool;
 
-	public function addMoney($player, $amount);
+	/**
+	 * 플레이어의 돈을 수량만큼 추가합니다.
+	 *
+	 * @param string $player
+	 * @param int|float $amount
+	 *
+	 * @return bool
+	 */
+	public function addMoney(string $player, $amount) : bool;
 
-	public function reduceMoney($player, $amount);
+	/**
+	 * 플레이어의 돈을 수량만큼 줄입니다.
+	 *
+	 * @param string $player
+	 * @param int|float $amount
+	 *
+	 * @return bool
+	 */
+	public function reduceMoney(string $player, $amount) : bool;
 
-	public function getRank($player);
+	/**
+	 * 플레이어의 돈 순위를 반환합니다.
+	 * 만약 플레이어가 존재하지 않을 시, false를 반환합니다.
+	 *
+	 * @param string $player
+	 *
+	 * @return int|false
+	 */
+	public function getRank(string $player);
 
-	public function getPlayerByRank($rank);
+	/**
+	 * 해당 순위에 있는 플레이어를 반환합니다.
+	 * 만약 플레이어가 존재하지 않을 시, false를 반환합니다.
+	 *
+	 * @param int $rank
+	 *
+	 * @return string|false
+	 */
+	public function getPlayerByRank(int $rank);
 
-	public function getAll();
+	/**
+	 * 모든 플레이어의 돈 데이터를 반환합니다.
+	 *
+	 * @return array
+	 */
+	public function getAll() : array;
 
-	public function getName();
+	/**
+	 * Provider의 이름을 반환합니다.
+	 *
+	 * @return string
+	 */
+	public function getName() : string;
 
+	/**
+	 * 모든 플레이어의 돈 데이터를 디스크에 저장합니다.
+	 */
 	public function save();
 
 	public function close();
