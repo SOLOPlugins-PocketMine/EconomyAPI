@@ -83,5 +83,6 @@ class TakeMoneyCommand extends EconomyAPICommand{
 				$sender->sendMessage(EconomyAPI::$prefix . $player . " 님은 서버에 접속한 적이 없습니다.");
 				break;
 		}
+		return true;
 	}
 }
