@@ -120,15 +120,15 @@ class EconomyAPI extends PluginBase implements Listener{
 	public function koreanWonFormat($money) : string{
 		$str = '';
 		$elements = [];
-		if($money > 1000000000000){
+		if($money >= 1000000000000){
 			$elements[] = floor($money / 1000000000000) . "조";
 			$money %= 1000000000000;
 		}
-		if($money > 100000000){
+		if($money >= 100000000){
 			$elements[] = floor($money / 100000000) . "억";
 			$money %= 100000000;
 		}
-		if($money > 10000){
+		if($money >= 10000){
 			$elements[] = floor($money / 10000) . "만";
 			$money %= 10000;
 		}
@@ -143,10 +143,7 @@ class EconomyAPI extends PluginBase implements Listener{
 	}
 
 	public function createAccount($player, $defaultMoney = false, bool $force = false) : bool{
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
-		$player = strtolower($player);
+		$player = strtolower($player instanceof Player ? $player->getName() : $player);
 
 		if(!$this->provider->accountExists($player)){
 			$defaultMoney = ($defaultMoney === false) ? $this->getConfig()->get("default-money") : $defaultMoney;
@@ -160,19 +157,13 @@ class EconomyAPI extends PluginBase implements Listener{
 	}
 
 	public function accountExists($player) : bool{
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
-		$player = strtolower($player);
+		$player = strtolower($player instanceof Player ? $player->getName() : $player);
 
 		return $this->provider->accountExists($player);
 	}
 
 	public function myMoney($player){
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
-		$player = strtolower($player);
+		$player = strtolower($player instanceof Player ? $player->getName() : $player);
 
 		return $this->provider->getMoney($player);
 	}
@@ -181,11 +172,7 @@ class EconomyAPI extends PluginBase implements Listener{
 		if($amount < 0){
 			return self::RET_INVALID;
 		}
-
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
-		$player = strtolower($player);
+		$player = strtolower($player instanceof Player ? $player->getName() : $player);
 
 		if($this->provider->accountExists($player)){
 			$amount = round($amount, 2);
@@ -208,11 +195,7 @@ class EconomyAPI extends PluginBase implements Listener{
 		if($amount < 0){
 			return self::RET_INVALID;
 		}
-
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
-		$player = strtolower($player);
+		$player = strtolower($player instanceof Player ? $player->getName() : $player);
 
 		if(($money = $this->provider->getMoney($player)) !== false){
 			$amount = round($amount, 2);
@@ -235,11 +218,7 @@ class EconomyAPI extends PluginBase implements Listener{
 		if($amount < 0){
 			return self::RET_INVALID;
 		}
-
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
-		$player = strtolower($player);
+		$player = strtolower($player instanceof Player ? $player->getName() : $player);
 
 		if(($money = $this->provider->getMoney($player)) !== false){
 			$amount = round($amount, 2);
@@ -259,10 +238,7 @@ class EconomyAPI extends PluginBase implements Listener{
 	}
 
 	public function getRank($player){
-		if($player instanceof Player){
-			$player = $player->getName();
-		}
-		$player = strtolower($player);
+		$player = strtolower($player instanceof Player ? $player->getName() : $player);
 
 		return $this->provider->getRank($player);
 	}
