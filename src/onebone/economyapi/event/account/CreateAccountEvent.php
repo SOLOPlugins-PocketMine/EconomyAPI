@@ -27,23 +27,27 @@ class CreateAccountEvent extends EconomyAPIEvent{
 
 	public static $handlerList;
 
-	private $username, $defaultMoney;
+	/** @var string */
+	private $username;
 
-	public function __construct(EconomyAPI $plugin, $username, $defaultMoney, $issuer){
+	/** @var float */
+	private $defaultMoney;
+
+	public function __construct(EconomyAPI $plugin, string $username, float $defaultMoney, string $issuer){
 		parent::__construct($plugin, $issuer);
 		$this->username = $username;
 		$this->defaultMoney = $defaultMoney;
 	}
 
-	public function getUsername(){
+	public function getUsername() : string{
 		return $this->username;
 	}
 
-	public function setDefaultMoney($money){
+	public function setDefaultMoney(float $money) : void{
 		$this->defaultMoney = $money;
 	}
 
-	public function getDefaultMoney(){
+	public function getDefaultMoney() : float{
 		return $this->defaultMoney;
 	}
 }

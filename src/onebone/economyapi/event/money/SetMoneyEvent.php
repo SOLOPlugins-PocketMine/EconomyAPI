@@ -28,7 +28,11 @@ class SetMoneyEvent extends EconomyAPIEvent{
 
 	public static $handlerList;
 
-	private $username, $money;
+	/** @var string */
+	private $username;
+
+	/** @var float */
+	private $money;
 
 	public function __construct(EconomyAPI $plugin, $username, $money, $issuer){
 		parent::__construct($plugin, $issuer);
@@ -36,11 +40,11 @@ class SetMoneyEvent extends EconomyAPIEvent{
 		$this->money = $money;
 	}
 
-	public function getUsername(){
+	public function getUsername() : string{
 		return $this->username;
 	}
 
-	public function getMoney(){
+	public function getMoney() : float{
 		return $this->money;
 	}
 }

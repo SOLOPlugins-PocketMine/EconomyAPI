@@ -27,6 +27,7 @@ use onebone\economyapi\EconomyAPI;
 
 abstract class EconomyAPIEvent extends PluginEvent implements Cancellable{
 
+	/** @var string */
 	private $issuer;
 
 	public function __construct(EconomyAPI $plugin, $issuer){
@@ -34,7 +35,7 @@ abstract class EconomyAPIEvent extends PluginEvent implements Cancellable{
 		$this->issuer = $issuer;
 	}
 
-	public function getIssuer(){
+	public function getIssuer() : string{
 		return $this->issuer;
 	}
 }
