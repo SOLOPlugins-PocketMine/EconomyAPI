@@ -61,9 +61,9 @@ interface Provider{
 	 *
 	 * @param string $player
 	 *
-	 * @return int|float
+	 * @return float|bool
 	 */
-	public function getMoney(string $player) : float;
+	public function getMoney(string $player);
 
 	/**
 	 * 플레이어의 돈을 설정합니다.
