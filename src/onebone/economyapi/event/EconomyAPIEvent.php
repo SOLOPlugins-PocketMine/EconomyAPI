@@ -30,7 +30,7 @@ abstract class EconomyAPIEvent extends PluginEvent implements Cancellable{
 	/** @var string */
 	private $issuer;
 
-	public function __construct(EconomyAPI $plugin, $issuer){
+	public function __construct(EconomyAPI $plugin, string $issuer){
 		parent::__construct($plugin);
 		$this->issuer = $issuer;
 	}

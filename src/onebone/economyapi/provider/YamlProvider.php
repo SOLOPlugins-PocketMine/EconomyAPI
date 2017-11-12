@@ -189,10 +189,6 @@ class YamlProvider implements Provider{
 		$this->config->save();
 	}
 
-	public function close(){
-		$this->save();
-	}
-
 	public function getName() : string{
 		return "Yaml";
 	}

@@ -34,7 +34,7 @@ class SetMoneyEvent extends EconomyAPIEvent{
 	/** @var float */
 	private $money;
 
-	public function __construct(EconomyAPI $plugin, $username, $money, $issuer){
+	public function __construct(EconomyAPI $plugin, string $username, float $money, string $issuer){
 		parent::__construct($plugin, $issuer);
 		$this->username = $username;
 		$this->money = $money;

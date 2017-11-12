@@ -33,7 +33,7 @@ class ReduceMoneyEvent extends EconomyAPIEvent{
 	/** @var float */
 	private $amount;
 
-	public function __construct(EconomyAPI $plugin, $username, $amount, $issuer){
+	public function __construct(EconomyAPI $plugin, string $username, float $amount, string $issuer){
 		parent::__construct($plugin, $issuer);
 		$this->username = $username;
 		$this->amount = $amount;
