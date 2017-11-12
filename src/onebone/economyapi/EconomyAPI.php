@@ -31,7 +31,6 @@ use pocketmine\utils\TextFormat;
 
 use onebone\economyapi\provider\Provider;
 use onebone\economyapi\provider\YamlProvider;
-use onebone\economyapi\provider\MySQLProvider;
 use onebone\economyapi\event\money\SetMoneyEvent;
 use onebone\economyapi\event\money\ReduceMoneyEvent;
 use onebone\economyapi\event\money\AddMoneyEvent;
@@ -52,8 +51,10 @@ class EconomyAPI extends PluginBase implements Listener{
 	const RET_INVALID = 0;
 	const RET_SUCCESS = 1;
 
+	/** @var EconomyAPI */
 	private static $instance = null;
 
+	/** @var Provider */
 	private $provider;
 
 	public static function getInstance(){
@@ -61,6 +62,9 @@ class EconomyAPI extends PluginBase implements Listener{
 	}
 
 	public function onLoad(){
+		if(self::$instance !== null){
+			throw new \InvalidStateException();
+		}
 		self::$instance = $this;
 	}
 
@@ -74,8 +78,7 @@ class EconomyAPI extends PluginBase implements Listener{
 				break;
 
 			default:
-				$this->getLogger()->critical("Invalid database was given.");
-				return false;
+				throw new \UnexpectedValueException("Invalid database was given");
 		}
 
 		foreach([
