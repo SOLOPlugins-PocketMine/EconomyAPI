@@ -63,7 +63,7 @@ interface Provider{
 	 *
 	 * @return int|float
 	 */
-	public function getMoney(string $player);
+	public function getMoney(string $player) : float;
 
 	/**
 	 * 플레이어의 돈을 설정합니다.
@@ -134,5 +134,4 @@ interface Provider{
 	 */
 	public function save();
 
-	public function close();
 }
