@@ -57,7 +57,7 @@ class EconomyAPI extends PluginBase implements Listener{
 	/** @var Provider */
 	private $provider;
 
-	public static function getInstance(){
+	public static function getInstance() : EconomyAPI{
 		return self::$instance;
 	}
 
@@ -96,7 +96,24 @@ class EconomyAPI extends PluginBase implements Listener{
 			$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new SaveTask($this), $saveInterval, $saveInterval);
 		}
 
-		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+		$this->getServer()->getPluginManager()->registerEvents(new class($this) implements Listener{
+			public function __construct(EconomyAPI $owner){
+				$this->owner = $owner;
+			}
+
+			/**
+			 * @ignoreCancelled true
+			 *
+			 * @priority MONITOR
+			 */
+			public function handlePlayerJoin(PlayerJoinEvent $event){
+				$player = $event->getPlayer();
+
+				if(!$this->owner->accountExists($player)){
+					$this->owner->createAccount($player, false, true);
+				}
+			}
+		}, $this);
 	}
 
 	public function onDisable(){
@@ -241,14 +258,6 @@ class EconomyAPI extends PluginBase implements Listener{
 
 	public function getPlayerByRank(int $rank){
 		return $this->provider->getPlayerByRank($rank);
-	}
-
-	public function onJoin(PlayerJoinEvent $event){
-		$player = $event->getPlayer();
-
-		if(!$this->provider->accountExists($player)){
-			$this->createAccount($player, false, true);
-		}
 	}
 
 	public function saveAll(){
