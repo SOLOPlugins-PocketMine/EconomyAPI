@@ -82,14 +82,9 @@ class EconomyAPI extends PluginBase implements Listener{
 		}
 
 		foreach([
-			"GiveMoneyCommand",
-			"MyMoneyCommand",
-			"PayCommand",
-			"SeeMoneyCommand",
-			"SetMoneyCommand",
-			"TakeMoneyCommand",
-			"TopBalanceCommand",
-			"TopMoneyCommand"
+			"GiveMoneyCommand", "MyMoneyCommand", "PayCommand",
+			"SeeMoneyCommand", "SetMoneyCommand", "TakeMoneyCommand",
+			"TopBalanceCommand", "TopMoneyCommand"
 		] as $class){
 			$class = "\\onebone\\economyapi\\command\\" . $class;
 			$this->getServer()->getCommandMap()->register("economyapi", new $class($this));
@@ -107,13 +102,11 @@ class EconomyAPI extends PluginBase implements Listener{
 	public function onDisable(){
 		$this->saveAll();
 
-		if($this->provider instanceof Provider){
-			$this->provider->close();
-		}
+		self::$instance = null;
 	}
 
 	public function getMonetaryUnit() : string{
-		return $this->getConfig()->get("monetary-unit");
+		return $this->getConfig()->get("monetary-unit", "￦");
 	}
 
 	public function thousandSeparatedFormat($money) : string{
