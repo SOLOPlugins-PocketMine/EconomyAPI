@@ -38,7 +38,7 @@ use onebone\economyapi\event\money\MoneyChangedEvent;
 use onebone\economyapi\event\account\CreateAccountEvent;
 use onebone\economyapi\task\SaveTask;
 
-class EconomyAPI extends PluginBase implements Listener{
+class EconomyAPI extends PluginBase{
 
 	public static $prefix = "§b§l[EconomyAPI] §r§7";
 
