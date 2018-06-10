@@ -25,7 +25,6 @@ use pocketmine\command\CommandSender;
 
 use onebone\economyapi\EconomyAPI;
 use onebone\economyapi\EconomyAPICommand;
-use onebone\economyapi\task\SortTask;
 
 class TopMoneyCommand extends EconomyAPICommand{
 
