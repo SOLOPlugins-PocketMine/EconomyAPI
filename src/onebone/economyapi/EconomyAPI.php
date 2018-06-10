@@ -24,7 +24,6 @@ use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\scheduler\PluginTask;
 use pocketmine\utils\Config;
 use pocketmine\utils\Utils;
 use pocketmine\utils\TextFormat;
@@ -93,7 +92,7 @@ class EconomyAPI extends PluginBase{
 		$saveInterval = $this->getConfig()->get("auto-save-interval") * 1200;
 
 		if($saveInterval > 0){
-			$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new SaveTask($this), $saveInterval, $saveInterval);
+			$this->getScheduler()->scheduleDelayedRepeatingTask(new SaveTask($this), $saveInterval, $saveInterval);
 		}
 
 		$this->getServer()->getPluginManager()->registerEvents(new class($this) implements Listener{
