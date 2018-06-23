@@ -24,11 +24,9 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat;
 use pocketmine\Player;
-
 use onebone\economyapi\EconomyAPI;
-use onebone\economyapi\EconomyAPICommand;
 
-class GiveMoneyCommand extends EconomyAPICommand{
+class GiveMoneyCommand extends Command{
 
 	private $plugin;
 
@@ -39,7 +37,7 @@ class GiveMoneyCommand extends EconomyAPICommand{
 		$this->plugin = $plugin;
 	}
 
-	public function _execute(CommandSender $sender, string $label, array $params) : bool{
+	public function execute(CommandSender $sender, string $label, array $params) : bool{
 		if(!$sender->hasPermission($this->getPermission())){
 			$sender->sendMessage(EconomyAPI::$prefix . "이 명령을 사용할 권한이 없습니다.");
 			return true;

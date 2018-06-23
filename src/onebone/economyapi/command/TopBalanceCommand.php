@@ -22,11 +22,9 @@ namespace onebone\economyapi\command;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-
 use onebone\economyapi\EconomyAPI;
-use onebone\economyapi\EconomyAPICommand;
 
-class TopBalanceCommand extends EconomyAPICommand{
+class TopBalanceCommand extends Command{
   private $plugin;
 
   public function __construct(EconomyAPI $plugin){
@@ -36,7 +34,7 @@ class TopBalanceCommand extends EconomyAPICommand{
 		$this->plugin = $plugin;
   }
 
-  public function _execute(CommandSender $sender, string $label, array $args) : bool{
+  public function execute(CommandSender $sender, string $label, array $args) : bool{
 		if(!$sender->hasPermission($this->getPermission())){
 			$sender->sendMessage(EconomyAPI::$prefix . "이 명령을 사용할 권한이 없습니다.");
 			return true;
